@@ -14,44 +14,34 @@ module.exports = function (source) {
   const routerDir = path.resolve(sourceRoot, options.viewPath)
 
   const defaultRoute = (name) => `{path: "",redirect: "${name}"}`
-  const normalRoute = (fileName, fullPath) => `{path: "${fileName.replace('\.vue', '')}", component: () => import("${path.normalize('../views/' + path.relative(routerDir, fullPath)).replace(/\\/g, '/')}")}`
+  const normalRoute = (fileName, fullPath) => `{path: "${fileName.replace('\.vue', '')}",component: () => import("${path.normalize('../views/' + path.relative(routerDir, fullPath)).replace(/\\/g, '/')}")}`
 
-  function readFileList(dir, l) {
-    let level = l ? l + 1 : 1;
+  function readFileList(dir) {
     // 路由并列的集合
     const list = []
-    // 有子的话，子路由的集合
-    const sonList = []
-    const slash = level === 1 ? '/' : ''
     const files = fs.readdirSync(dir);
     files.forEach(item => {
       var fullPath = path.join(dir, item);
       const stat = fs.statSync(fullPath);
       if (stat.isDirectory()) {
-        sonList.push(readFileList(path.join(dir, item), level))
+        if (fs.readdirSync(fullPath).length > 0) {
+          const sonRoute = `{path:"${item}",component: {render: h => h("router-view")}, children: [${readFileList(path.join(dir, item))}]}`
+          list.push(sonRoute)
+        }
       } else {
-        // 如果存在index模块，添加一个重定向模块
-        if (item === 'index.vue') {
-          list.push(defaultRoute(`${slash}index`));
-        }
-        // 1级时index.vue是一个套嵌路由
-        if (level !== 1) {
-          // 添加一个标准路由
-          list.push(normalRoute(`${slash}${item}`, fullPath))
-        }
+        // 添加一个标准路由
+        list.push(normalRoute(`${item}`, fullPath))
+      }
+      // 如果存在index模块，添加一个重定向模块
+      if (item === 'index.vue') {
+        list.push(defaultRoute(`index`));
       }
     });
-    const sonRoute = level !== 1 ? `{path:"${slash}${item}", children: [${sonList.join(',')}]}` :
-    `{path:"${slash}${item}", component: () => import("${path.normalize('../views/' + path.relative(routerDir, fullPath)).replace(/\\/g, '/')}"), children: [${sonList.join(',')}]}`
-    list.push(sonRoute)
     return list.join(',')
   }
   const result = readFileList(routerDir)
 
-  console.log(result)
-
-  source = source.replace('\/\*injectRoutes\*\/', `routes: [${result}]`);
-  // 对资源应用一些转换……
+  source = source.replace('\/\*injectRoutes\*\/', result)
 
   return source;
 };
