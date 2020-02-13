@@ -34,32 +34,19 @@ class WatchRouterPlugin {
             //     });
         });
 
-        // compiler.hooks.watchRun.tapAsync('watchRun', (compile, callback) => {
-        //     console.log('以异步方式触及 watchRun 钩子。')
-        //     compile.hooks.compilation.tap('compilation', (compilation, params) => {
-        //         console.log(Object.keys(compilation))
-        //     });
-        //     callback()
-        // });
-        // compiler.hooks.run.tapAsync(pluginName, (compiler, callback) => {
-        //     console.log('以异步方式触及 run 钩子。')
-        //     callback()
-        // });
-
-        compiler.hooks.watchRun.tapAsync("WatchRouterPlugin", cmf => {
-            cmf.hooks.rebuildModule.tap("WatchRouterPlugin", result => {
-                if (!result) return;
-                // console.log(result.request)
-                // if (result.request.indexOf('core.module') > -1) {
-                    console.log(result)
-                // }
-                return result;
-            })
-            // cmf.hooks.afterResolve.tap("ContextReplacementPlugin", result => {
-            //     if (!result) return;
-            //     return result;
-            // })
-        })
+        compiler.hooks.watchRun.tapAsync('watchRun', (compile, callback) => {
+            console.log('以异步方式触及 watchRun 钩子。')
+            console.log(Object.keys(compile.hooks.shouldEmit))
+            // compile.hooks.compilation.tap('compilation', (compilation, params) => {
+            //     console.log(Object.keys(compilation))
+            // });
+            // 不加就会卡住
+            callback()
+        });
+        compiler.hooks.run.tapAsync(pluginName, (compiler, callback) => {
+            console.log('以异步方式触及 run 钩子。')
+            callback()
+        });
     }
 }
 
