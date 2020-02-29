@@ -42,7 +42,10 @@ export class httpClient {
     post = async (url, data = {}, config = {}) => responseBase(await this.axios.post(url, data, config))
 
     // 封装patch方法
-    patch = async (url, data = {}) => responseBase(await this.axios.patch(url, data))
+    put = async (url, data = {}, config = {}) => responseBase(await this.axios.put(url, data, config))
+
+    // 封装patch方法
+    patch = async (url, data = {}, config = {}) => responseBase(await this.axios.patch(url, data, config))
 
     // 封装delete方法
     del = async (url, data = {}) => await this.axios.delete(url, data)

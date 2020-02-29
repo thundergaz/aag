@@ -3,21 +3,29 @@ const pluginName = 'WatchRouterPlugin';
 class WatchRouterPlugin {
     constructor() { }
     apply(compiler) {
-        compiler.hooks.normalModuleFactory.tap("normal-module-factory", (compilation) => {
-            compilation.hooks.beforeResolve.tapAsync("before-resolve", function (result, callback) {
-                if (!result) return callback();
-                // if(resourceRegExp.test(result.request)) {
-                //     if(typeof newResource === "function") {
-                //         newResource(result);
-                //     } else {
-                //         result.request = newResource;
-                //     }
-                // }
-                if (result.request.indexOf('core.module') > -1) {
-                    // console.log(result);
-                }
-                return callback(null, result);
-            });
+        console.group('watchRun was runed', 'group')
+        console.log('aaaa')
+        console.groupCollapsed('watchRun was runed', 'groupCollapsed')
+        console.log('aaaa')
+        console.groupEnd('watchRun was runed', 'groupEnd')
+        console.log('aaaa')
+        compiler.hooks.watchRun.tapAsync("normal-module-factory", (compilation, callback) => {
+            callback()
+            // compilation.hooks.watchRun.tapAsync("before-resolve", function (result, callback) {
+            //     console.log(result)
+            //     if (!result) return callback();
+            //     // if(resourceRegExp.test(result.request)) {
+            //     //     if(typeof newResource === "function") {
+            //     //         newResource(result);
+            //     //     } else {
+            //     //         result.request = newResource;
+            //     //     }
+            //     // }
+            //     // if (result.request.indexOf('core.module') > -1) {
+            //     //     // console.log(result);
+            //     // }
+            //     return callback(null, result);
+            // });
             //     compilation.hooks.afterResolve.tapAsync("after-resolve", function(result, callback) {
             //         if(!result) return callback();
             //         if (result.resource.indexOf('core.module') > -1) {
