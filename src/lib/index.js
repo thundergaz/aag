@@ -1,3 +1,5 @@
 export * from './core/http-client'
 export * from './core/route'
+export * from './core/auth'
 export * from './component'
+export * from './utils'

@@ -1,7 +1,7 @@
 const axios = require('axios')
 export class httpClient {
     callback
-    constructor() {
+    constructor(auth) {
         this.axios = axios;
         this.axios.defaults.timeout = 10000
         this.normalCode = 200
@@ -11,23 +11,38 @@ export class httpClient {
         // request 拦截
         this.axios.interceptors.request.use(
             config => {
-                let token = sessionStorage.token
-                if (token) {
-                    config.headers.Authorization = token
-                }
+                auth.getAuthorizationHeader() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
                 return config
             },
             err => {
                 return Promise.reject(err)
             }
         )
+        const translate = {
+            400: '请求错误',
+            401: '授权认证失败',
+            403: '禁止访问',
+            404: '资源未找到',
+            405: '不支持该操作',
+            422: '请求数据有误',
+            500: '内部服务器错误',
+            503: '网络故障'
+        };
         this.axios.interceptors.response.use(
             response => {
-                if (response.data.success || response.config.responseType === 'blob') {
-                    return response.data
+                if (response.status > 200 ) {
+                    this.callback(translate[response.status], 'error');
+                    return Promise.reject()
                 } else {
-                    this.callback('请求API出错！');
-                    throw new Error('请求API出错！');
+                    if (response.data) {
+                        if (response.data.code === this.normalCode || response.config.responseType === 'blob') {
+                            return response.data.data
+                        } else {
+                            this.callback(response.data.msg, 'error');
+                        }
+                    } else {
+                        this.callback('数据错误！', 'error');
+                    }
                 }
             },
             error => {
@@ -37,16 +52,16 @@ export class httpClient {
     }
 
     // 封装get方法
-    get = async (url, params = {}) => this.responseBase(await this.axios.get(url, { params: params }))
+    get = async (url, params = {}) => await this.axios.get(url, { params: params })
 
     // 封装post方法
-    post = async (url, data = {}, config = {}) => this.responseBase(await this.axios.post(url, data, config))
+    post = async (url, data = {}, config = {}) => await this.axios.post(url, data, config)
 
     // 封装patch方法
-    put = async (url, data = {}, config = {}) => this.responseBase(await this.axios.put(url, data, config))
+    put = async (url, data = {}, config = {}) => await this.axios.put(url, data, config)
 
     // 封装patch方法
-    patch = async (url, data = {}, config = {}) => this.responseBase(await this.axios.patch(url, data, config))
+    patch = async (url, data = {}, config = {}) => await this.axios.patch(url, data, config)
 
     // 封装delete方法
     del = async (url, data = {}) => await this.axios.delete(url, data)
@@ -54,14 +69,4 @@ export class httpClient {
     // 封装download
     download = async (url, data = {}, config = {}) => await this.axios.post(url, data, config)
 
-    responseBase = (res) => {
-        if (res.code !== this.normalCode) {
-            this.callback('返回出错！');
-            throw new Error('返回出错！');
-        } else {
-            return res.data;
-        }
-    }
-
 }
-
