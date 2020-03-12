@@ -1,13 +1,12 @@
 const axios = require('axios')
 export class httpClient {
-    callback
-    constructor(auth) {
+    constructor(auth, callback) {
         this.axios = axios;
         this.axios.defaults.timeout = 10000
-        this.normalCode = 200
         this.axios.defaults.headers = {
             'Content-Type': 'application/json;charset=UTF-8'
         }
+        this.axios.defaults.baseURL = auth.authConfig.baseUrl;
         // request 拦截
         this.axios.interceptors.request.use(
             config => {
@@ -31,17 +30,17 @@ export class httpClient {
         this.axios.interceptors.response.use(
             response => {
                 if (response.status > 200 ) {
-                    this.callback(translate[response.status], 'error');
+                    callback(translate[response.status], 'error');
                     return Promise.reject()
                 } else {
                     if (response.data) {
-                        if (response.data.code === this.normalCode || response.config.responseType === 'blob') {
+                        if (response.data.code === auth.authConfig.normalCode || response.config.responseType === 'blob') {
                             return response.data.data
                         } else {
-                            this.callback(response.data.msg, 'error');
+                            callback(response.data.msg, 'error');
                         }
                     } else {
-                        this.callback('数据错误！', 'error');
+                        callback('数据错误！', 'error');
                     }
                 }
             },

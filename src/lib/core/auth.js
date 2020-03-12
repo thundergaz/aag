@@ -15,10 +15,14 @@ export class Auth {
         tokenType: 'bearer',
         accessToken: 'access_token',
         upperTokenType: true,
+        normalCode: 200,
     };
     authConfig
     constructor(config) {
         this.authConfig = { ...this.defaultConfig, ...config};
+    }
+    install = (vue) => {
+        vue.prototype.authService = this
     }
 
     SSO() {
@@ -33,7 +37,6 @@ export class Auth {
       
     SSOGoLogin() {
         var redirectUri = encodeURIComponent(this.authConfig.redirectUri);
-        debugger
         window.location.href = this.authConfig.SSOUrl+"/login?service="+redirectUri;
     }
 
