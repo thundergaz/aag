@@ -25,10 +25,14 @@ export class Auth {
         vue.prototype.authService = this
     }
 
+    isLogin() {
+        return !!this.getToken();
+    }
+
     SSO() {
         let ticket = getQueryString(this.authConfig.ticketName);
         !!ticket ? this.SSOLogin(ticket) : this.SSOGoLogin();
-    };
+    }
 
     SSOLogin(ticket){
         this.login(ticket);

@@ -10,7 +10,7 @@ export class httpClient {
         // request 拦截
         this.axios.interceptors.request.use(
             config => {
-                auth.getAuthorizationHeader() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
+                auth.isLogin() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
                 return config
             },
             err => {
@@ -37,7 +37,7 @@ export class httpClient {
                         if (response.data.code === auth.authConfig.normalCode || response.config.responseType === 'blob') {
                             return response.data.data
                         } else {
-                            callback(response.data.msg, 'error');
+                            callback(response.data.msg, 'error', response.data);
                         }
                     } else {
                         callback('数据错误！', 'error');
