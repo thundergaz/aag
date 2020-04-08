@@ -31,8 +31,10 @@ export class httpClient {
             response => {
                 if (response.status > 200 ) {
                     callback(translate[response.status], 'error');
-                    return Promise.reject()
                 } else {
+                    if (response.data.size) {
+                        return response.data
+                    }
                     if (response.data) {
                         if (response.data.code === auth.authConfig.normalCode || response.config.responseType === 'blob') {
                             return response.data.data
@@ -43,6 +45,7 @@ export class httpClient {
                         callback('数据错误！', 'error');
                     }
                 }
+                return Promise.reject()
             },
             error => {
                 return Promise.reject(error)
@@ -66,6 +69,6 @@ export class httpClient {
     del = async (url, data = {}) => await this.axios.delete(url, data)
 
     // 封装download
-    download = async (url, data = {}, config = {}) => await this.axios.post(url, data, config)
+    download = async (url, data = {}, config = {}) => await this.axios.post(url, data, { responseType: 'blob', ...config })
 
 }
