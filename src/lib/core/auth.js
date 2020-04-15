@@ -1,13 +1,16 @@
 import { getQueryString } from '../utils';
 export class Auth {
     defaultConfig = {
-        storageType: 0,
+        storageType: 0, // localstorege sissonstoreage cookies
         storageName: 'oauthToken',
         ticketName: 'token',
         SSOUrl: '',
+        SSOParams: {},
         baseUrl: '',
         clientId: '12345',
+        expiresTime: 7,
         scope: 'openid profile default-api',
+        redirectUriKey: 'service',
         redirectUri: window.location.origin + window.location.pathname,
         profileUri: 'userinfo',
         logoutPath: '/',
@@ -19,7 +22,10 @@ export class Auth {
     };
     authConfig
     constructor(config) {
-        this.authConfig = { ...this.defaultConfig, ...config};
+        this.authConfig = { ...this.defaultConfig, ...config };
+        if (this.authConfig.storageType) {
+            this.authConfig.expiresTime = 0
+        }
     }
     install = (vue) => {
         vue.prototype.authService = this
@@ -34,26 +40,24 @@ export class Auth {
         !!ticket ? this.SSOLogin(ticket) : this.SSOGoLogin();
     }
 
-    SSOLogin(ticket){
+    SSOLogin(ticket) {
         this.login(ticket);
         window.location.href = window.location.pathname
     }
-      
+
     SSOGoLogin() {
         var redirectUri = encodeURIComponent(this.authConfig.redirectUri);
-        window.location.href = this.authConfig.SSOUrl+"/login?service="+redirectUri;
+        const params = Object.keys(this.authConfig.SSOParams).map(x => `${x}=${this.authConfig.SSOParams[x]}`).join('&');
+        window.location.href = `${this.authConfig.SSOUrl}?${this.authConfig.redirectUriKey}=${redirectUri}${params ? '&' + params : ''}`;
     }
 
-    login(tokenStr, remember = true) {
+    login(tokenStr) {
         const token = {};
-        token.token_type = this.authConfig.tokenType;
+        this.authConfig.tokenType ? token.token_type = this.authConfig.tokenType : null;
         token.access_token = tokenStr;
-        if (!remember) {
-            this.authConfig.storageType = 1;
-        } else {
+        if (this.authConfig.expiresTime) {
             const date = new Date();
-            this.authConfig.storageType = 0;
-            token.expires_at = date.setDate(date.getDate() + 7);
+            token.expires_at = date.setDate(date.getDate() + this.authConfig.expiresTime);
         }
         this.setToken(token);
     }
@@ -69,21 +73,21 @@ export class Auth {
         let storage;
         if (this.authConfig.storageType === 0) {
             storage = localStorage;
-        } else {
+        } else if (this.authConfig.storageType === 1) {
             storage = sessionStorage;
+        } else {
+            const cookies = document.cookie.split(';').map(x => x.trim()).map(y => y.split('=')).map(z => ({ [z[0]]: z[1] }));
+            let objectCookies = {};
+            cookies.forEach(x => { objectCookies = { ...objectCookies, ...x } })
+            storage = objectCookies[this.authConfig.storageName] ? { [this.authConfig.storageName]: JSON.stringify({ access_token: objectCookies[this.authConfig.storageName] }) } : {};
         }
         return storage;
     }
 
     getToken() {
         const dataString = this.getStorage()[this.authConfig.storageName];
-        if (dataString) {
-            const data = JSON.parse(dataString);
-            if (data && data.expires_at && new Date(data.expires_at) >= new Date()) {
-                return data;
-            }
-        }
-        return null;
+        const data = dataString ? JSON.parse(dataString) : null;
+        return data ? data.expires_at ? new Date(data.expires_at) >= new Date() ? data : null : data : null;
     }
 
     setToken(data) {
@@ -97,11 +101,11 @@ export class Auth {
     getAuthorizationHeader() {
         const token = this.getToken();
         if (token) {
-            const tokenType = token.token_type;
+            const tokenType = token.token_type ? token.token_type : null;
             const accessToken = token.access_token;
-            return `${this.authConfig.upperTokenType ? tokenType[0].toUpperCase() + tokenType.substr(1) : tokenType.toLocaleLowerCase()} ${accessToken}`;
+            return tokenType ? `${this.authConfig.upperTokenType ? tokenType[0].toUpperCase() + tokenType.substr(1) : tokenType.toLocaleLowerCase()} ${accessToken}` : accessToken;
         }
         return '';
     }
-   
+
 }
