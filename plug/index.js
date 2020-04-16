@@ -3,12 +3,6 @@ const pluginName = 'WatchRouterPlugin';
 class WatchRouterPlugin {
     constructor() { }
     apply(compiler) {
-        console.group('watchRun was runed', 'group')
-        console.log('aaaa')
-        console.groupCollapsed('watchRun was runed', 'groupCollapsed')
-        console.log('aaaa')
-        console.groupEnd('watchRun was runed', 'groupEnd')
-        console.log('aaaa')
         compiler.hooks.watchRun.tapAsync("normal-module-factory", (compilation, callback) => {
             callback()
             // compilation.hooks.watchRun.tapAsync("before-resolve", function (result, callback) {
@@ -48,7 +42,6 @@ class WatchRouterPlugin {
             // compile.hooks.compilation.tap('compilation', (compilation, params) => {
             //     console.log(Object.keys(compilation))
             // });
-            // 不加就会卡住
             callback()
         });
         compiler.hooks.run.tapAsync(pluginName, (compiler, callback) => {

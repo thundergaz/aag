@@ -17,6 +17,7 @@ export class Auth {
         logoutPath: '/',
         notAuthUrl: 'login,manage/user/mobile/',
         tokenType: 'bearer',
+        authHeadName: 'Authorization',
         accessToken: 'access_token',
         upperTokenType: true,
         normalCode: 200,

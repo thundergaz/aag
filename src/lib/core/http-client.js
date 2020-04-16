@@ -11,7 +11,7 @@ export class httpClient {
         this.axios.interceptors.request.use(
             config => {
                 if (!auth.authConfig.notAuthUrl.split(',').some( x => x === config.url)) {
-                    auth.isLogin() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
+                    auth.isLogin() ? config.headers[auth.authConfig.authHeadName] = auth.getAuthorizationHeader() : null;
                 }
                 return config
             },
