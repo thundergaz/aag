@@ -10,7 +10,9 @@ export class httpClient {
         // request 拦截
         this.axios.interceptors.request.use(
             config => {
-                auth.isLogin() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
+                if (!auth.authConfig.notAuthUrl.split(',').some( x => x === config.url)) {
+                    auth.isLogin() ? config.headers.Authorization = auth.getAuthorizationHeader() : null;
+                }
                 return config
             },
             err => {
@@ -29,14 +31,14 @@ export class httpClient {
         };
         this.axios.interceptors.response.use(
             response => {
-                if (response.status > 200 ) {
+                if (response.status > 200) {
                     callback(translate[response.status], 'error');
                 } else {
                     if (response.data.size) {
                         return response.data
                     }
                     if (response.data) {
-                        if (response.data.code === auth.authConfig.normalCode || response.config.responseType === 'blob') {
+                        if ( auth.authConfig.normalCode.indexOf(Number(response.data.code)) > -1 || response.config.responseType === 'blob') {
                             return response.data.data
                         } else {
                             callback(response.data.msg, 'error', response.data);

@@ -4,6 +4,7 @@ export class Auth {
         storageType: 0, // localstorege sissonstoreage cookies
         storageName: 'oauthToken',
         ticketName: 'token',
+        ticketUse: null,
         SSOUrl: '',
         SSOParams: {},
         baseUrl: '',
@@ -40,8 +41,8 @@ export class Auth {
         !!ticket ? this.SSOLogin(ticket) : this.SSOGoLogin();
     }
 
-    SSOLogin(ticket) {
-        this.login(ticket);
+    async SSOLogin(ticket) {
+        await this.login(ticket);
         window.location.href = window.location.pathname
     }
 
@@ -51,10 +52,14 @@ export class Auth {
         window.location.href = `${this.authConfig.SSOUrl}?${this.authConfig.redirectUriKey}=${redirectUri}${params ? '&' + params : ''}`;
     }
 
-    login(tokenStr) {
+    async login(tokenStr) {
         const token = {};
-        this.authConfig.tokenType ? token.token_type = this.authConfig.tokenType : null;
-        token.access_token = tokenStr;
+        if (!!this.authConfig.ticketUse) {
+            await this.authConfig.ticketUse(tokenStr).then(res => token.access_token = res)
+        } else {
+            token.access_token = tokenStr
+        }
+        this.authConfig.tokenType && token.access_token ? token.token_type = this.authConfig.tokenType : null;
         if (this.authConfig.expiresTime) {
             const date = new Date();
             token.expires_at = date.setDate(date.getDate() + this.authConfig.expiresTime);

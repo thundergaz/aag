@@ -8,10 +8,6 @@ module.exports = function (source) {
     rootContext,
     resourcePath,
   } = loaderContext
-  console.log('')
-  console.log('')
-  console.log("Running")
-  console.log('')
   const context = rootContext || process.cwd()
   const sourceRoot = path.dirname(path.relative(context, resourcePath))
   const routerDir = path.resolve(sourceRoot, options.viewPath)
