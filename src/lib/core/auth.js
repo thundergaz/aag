@@ -20,7 +20,7 @@ export class Auth {
         authHeadName: 'Authorization',
         accessToken: 'access_token',
         upperTokenType: true,
-        normalCode: 200,
+        normalCode: [200],
     };
     authConfig
     constructor(config) {

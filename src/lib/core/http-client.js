@@ -31,25 +31,22 @@ export class httpClient {
         };
         this.axios.interceptors.response.use(
             response => {
-                if (response.status > 200) {
-                    callback(translate[response.status], 'error');
-                } else {
-                    if (response.data.size) {
-                        return response.data
-                    }
-                    if (response.data) {
-                        if ( auth.authConfig.normalCode.indexOf(Number(response.data.code)) > -1 || response.config.responseType === 'blob') {
-                            return response.data.data
-                        } else {
-                            callback(response.data.msg, 'error', response.data);
-                        }
+                if (response.data.size) {
+                    return response.data
+                }
+                if (response.data) {
+                    if ( auth.authConfig.normalCode.indexOf(Number(response.data.code)) > -1) {
+                        return response.data.data
                     } else {
-                        callback('数据错误！', 'error');
+                        callback(response.data.msg, 'error', response.data);
                     }
+                } else {
+                    callback('数据错误！', 'error');
                 }
                 return Promise.reject()
             },
             error => {
+                callback(translate[error.response.status], 'error', error.response.data);
                 return Promise.reject(error)
             },
         )
