@@ -19,6 +19,7 @@ export class Auth {
         tokenType: 'bearer',
         authHeadName: 'Authorization',
         accessToken: 'access_token',
+        httpTimeout: 10000,
         upperTokenType: true,
         normalCode: [200],
     };

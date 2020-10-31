@@ -2,7 +2,7 @@ const axios = require('axios')
 export class httpClient {
     constructor(auth, callback) {
         this.axios = axios;
-        this.axios.defaults.timeout = 10000
+        this.axios.defaults.timeout = auth.authConfig.httpTimeout;
         this.axios.defaults.headers = {
             'Content-Type': 'application/json;charset=UTF-8'
         }
@@ -41,9 +41,9 @@ export class httpClient {
                         callback(response.data.msg, 'error', response.data);
                     }
                 } else {
-                    callback('数据错误！', 'error');
+                    callback('数据错误！', 'error', response);
                 }
-                return Promise.reject()
+                return Promise.reject(response);
             },
             error => {
                 callback(translate[error.response.status], 'error', error.response.data);
