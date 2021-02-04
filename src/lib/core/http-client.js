@@ -31,19 +31,22 @@ export class httpClient {
         };
         this.axios.interceptors.response.use(
             response => {
-                if (response.data.size) {
-                    return response.data
-                }
                 if (response.data) {
-                    if ( auth.authConfig.normalCode.indexOf(Number(response.data.code)) > -1) {
-                        return response.data.data
-                    } else {
-                        callback(response.data.msg, 'error', response.data);
+                    // 附合规定样式，才去处理结果。
+                    if (response.data.code) {
+                        if ( auth.authConfig.normalCode.indexOf(Number(response.data.code)) > -1) {
+                            return response.data.data
+                        } else {
+                            callback(response.data.msg, 'error', response.data);
+                            return Promise.reject(`状态码为${response.data.code}, 为巩异常时状态码`)
+                        }
                     }
+                    // 不附合规定样式的一律原样返回
+                    return response.data
                 } else {
-                    callback('数据错误！', 'error', response);
+                    callback('数据为空！', 'error');
+                    return Promise.reject('数据为空！')
                 }
-                return Promise.reject(response);
             },
             error => {
                 callback(translate[error.response.status], 'error', error.response.data);
@@ -53,7 +56,7 @@ export class httpClient {
     }
 
     // 封装get方法
-    get = async (url, params = {}) => await this.axios.get(url, { params: params })
+    get = async (url, config = {}) => await this.axios.get(url, config)
 
     // 封装post方法
     post = async (url, data = {}, config = {}) => await this.axios.post(url, data, config)
