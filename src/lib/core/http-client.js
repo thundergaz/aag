@@ -56,7 +56,7 @@ export class httpClient {
     }
 
     // 封装get方法
-    get = async (url, config = {}) => await this.axios.get(url, config)
+    get = async (url, params = {}, config = {}) => await this.axios.get(url, { ...config, params: params})
 
     // 封装post方法
     post = async (url, data = {}, config = {}) => await this.axios.post(url, data, config)
